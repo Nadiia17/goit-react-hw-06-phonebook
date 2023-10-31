@@ -1,4 +1,5 @@
-import { nanoid } from 'nanoid';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/contactsSlice';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -19,98 +20,43 @@ const PhonebookSchema = Yup.object().shape({
     .required('Phone number is required'),
 });
 
-export const ContactForm = ({ onFormSubmit, currentContacts }) => (
-  <Formik
-    initialValues={{
-      name: '',
-      number: '',
-    }}
-    validationSchema={PhonebookSchema}
-    onSubmit={(values, actions) => {
-      const isContactExists = currentContacts.some(
-        contact => contact.name.toLowerCase() === values.name.toLowerCase()
-      );
-      if (isContactExists) {
-        alert(`${values.name} is already in the phonebook`);
-      } else {
-        const newContact = { ...values, id: nanoid() };
-        onFormSubmit(newContact);
-        actions.resetForm();
-      }
-    }}
-  >
-    <StyledForm>
-      <StyledLabel>
-        Name
-        <StyledField name="name" placeholder="Enter name" />
-        <StyledErrorMessage name="name" component="div" />
-      </StyledLabel>
+export const ContactForm = () => {
+  const dispatch = useDispatch();
+  const currentContacts = useSelector(state => state.contacts.contacts);
 
-      <StyledLabel>
-        Number
-        <StyledField name="number" placeholder="Enter number XXX-XX-XX" />
-        <StyledErrorMessage name="number" component="div" />
-      </StyledLabel>
-      <StyledButton type="submit">Add contact</StyledButton>
-    </StyledForm>
-  </Formik>
-);
+  return (
+    <Formik
+      initialValues={{
+        name: '',
+        number: '',
+      }}
+      validationSchema={PhonebookSchema}
+      onSubmit={(values, actions) => {
+        const isContactExists = currentContacts.some(
+          contact => contact.name.toLowerCase() === values.name.toLowerCase()
+        );
+        if (isContactExists) {
+          alert(`${values.name} is already in the phonebook`);
+        } else {
+          dispatch(addContact(values.name, values.number));
+          actions.resetForm();
+        }
+      }}
+    >
+      <StyledForm>
+        <StyledLabel>
+          Name
+          <StyledField name="name" placeholder="Enter name" />
+          <StyledErrorMessage name="name" component="div" />
+        </StyledLabel>
 
-// export class ContactForm extends Component {
-//   state = {
-//     name: '',
-//     number: '',
-//   };
-
-//   handleChange = evt => {
-//     const { name, value } = evt.target;
-//     this.setState({ [name]: value });
-//   };
-
-//   handleSubmit = evt => {
-//     evt.preventDefault();
-
-//     const newContact = {
-//       id: nanoid(),
-//       ...this.state,
-//     };
-
-//     this.props.onSubmit(newContact);
-//     this.setState({
-//       name: '',
-//       number: '',
-//     });
-//   };
-
-//   render() {
-//     const { name, number } = this.state;
-//     return (
-//       <form onSubmit={this.handleSubmit}>
-//         <label>
-//           Name
-//           <input
-//             type="text"
-//             name="name"
-//             placeholder="Enter login"
-//             value={name}
-//             onChange={this.handleChange}
-//             required
-//           />
-//         </label>
-//         <label>
-//           Number
-//           <input
-//             type="tel"
-//             name="number"
-//             placeholder="Enter number"
-//             value={number}
-//             onChange={this.handleChange}
-//             required
-//           />
-//         </label>
-
-//         <button type="submit">Add contact</button>
-//       </form>
-//     );
-//   }
-// }
+        <StyledLabel>
+          Number
+          <StyledField name="number" placeholder="Enter number XXX-XX-XX" />
+          <StyledErrorMessage name="number" component="div" />
+        </StyledLabel>
+        <StyledButton type="submit">Add contact</StyledButton>
+      </StyledForm>
+    </Formik>
+  );
+};
